@@ -28,7 +28,7 @@ export default function Home() {
             </div>
             <a
               className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 mt-12 text-background transition-colors hover:bg-primary-hover md:w-39.5"
-              href="/auth/login"
+              href="/login"
             >
               Acesse agora
             </a>

@@ -17,7 +17,7 @@ export interface RecentActivity {
 export interface QuickAction {
   title: string;
   description: string;
-  href: string;
+  action: "create" | "edit";
   icon: string;
 }
 
@@ -33,14 +33,14 @@ export interface Sector {
 
 export const statsData: StatCard[] = [
   {
-    title: "Mapeados",
+    title: "Total de processos",
     value: "15",
     change: "+12.5%",
     changeType: "positive",
     icon: "Users",
   },
   {
-    title: "Total de Processos",
+    title: "Com documentação",
     value: "19",
     change: "+3.2%",
     changeType: "positive",
@@ -112,7 +112,7 @@ export const sectorsData: Sector[] = [
   },
   {
     id: "2",
-    name: "Vendas",
+    name: "Comercial",
     processCount: 8,
     systemicCount: 5,
     manualCount: 3,
@@ -141,27 +141,15 @@ export const sectorsData: Sector[] = [
 
 export const quickActionsData: QuickAction[] = [
   {
-    title: "New Project",
-    description: "Create a new project workspace",
-    href: "/auth/projects/new",
+    title: "Novo setor",
+    description: "Crie um novo setor para organizar seus processos",
+    action: "create",
     icon: "Plus",
   },
   {
-    title: "Add User",
-    description: "Invite team members",
-    href: "/users/invite",
-    icon: "UserPlus",
-  },
-  {
-    title: "Create Ticket",
-    description: "Submit a support request",
-    href: "/tickets/new",
-    icon: "Ticket",
-  },
-  {
-    title: "Schedule Meeting",
-    description: "Set up a calendar event",
-    href: "/calendar/new",
-    icon: "Calendar",
+    title: "Editar setor",
+    description: "Edite ou apague um setor existente",
+    action: "edit",
+    icon: "Edit",
   },
 ];

@@ -1,13 +1,9 @@
 import {
-  LayoutGrid,
   MessageSquare,
   FileText,
-  Calendar,
+  Cog,
   Ticket,
   CheckSquare,
-  UserPlus,
-  BookOpen,
-  Rss,
   type LucideIcon,
   HomeIcon,
 } from "lucide-react";
@@ -26,22 +22,6 @@ export interface NavigationSection {
 
 export const navigationData: NavigationSection[] = [
   {
-    title: "Applications",
-    items: [
-      {
-        name: "Chat",
-        icon: MessageSquare,
-        href: "/chat",
-      },
-      {
-        name: "Note",
-        icon: FileText,
-        href: "/notes",
-        badge: "active",
-      },
-    ],
-  },
-  {
     title: "Pages",
     items: [
       {
@@ -50,9 +30,9 @@ export const navigationData: NavigationSection[] = [
         href: "/auth/dashboard",
       },
       {
-        name: "Calendar",
-        icon: Calendar,
-        href: "/calendar",
+        name: "Gestão de processos",
+        icon: Cog,
+        href: "/auth/dashboard/processes",
       },
       {
         name: "Invoice",
@@ -71,31 +51,9 @@ export const navigationData: NavigationSection[] = [
       },
     ],
   },
-  {
-    title: "Additional",
-    items: [
-      {
-        name: "Register",
-        icon: UserPlus,
-        href: "/register",
-      },
-      {
-        name: "Documentation",
-        icon: BookOpen,
-        href: "/docs",
-      },
-      {
-        name: "Blog",
-        icon: Rss,
-        href: "/blog",
-      },
-    ],
-  },
 ];
 
 // Helper to get the section icon
 export const sectionIcons: Record<string, LucideIcon> = {
-  Applications: LayoutGrid,
   Pages: FileText,
-  Additional: BookOpen,
 };

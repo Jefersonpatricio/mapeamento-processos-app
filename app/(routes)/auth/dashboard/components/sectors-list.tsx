@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Sector } from "../data/dashboard-data";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const iconMap: Record<string, LucideIcon> = {
   Users,
@@ -48,33 +49,57 @@ const colorClasses: Record<
 
 interface SectorsListProps {
   sectors: Sector[];
+  isEditing: boolean;
+  selectedSectors: string[];
+  onToggleSector: (sectorId: string) => void;
 }
 
-export function SectorsList({ sectors }: SectorsListProps) {
+export function SectorsList({
+  sectors,
+  isEditing,
+  selectedSectors,
+  onToggleSector,
+}: SectorsListProps) {
   return (
     <div className="rounded-lg border border-border bg-card">
       <div className="border-b border-border p-4">
         <h3 className="text-lg font-semibold text-foreground">
           Setores Cadastrados
         </h3>
+        <p className="text-sm text-muted-foreground">
+          Para visualizar os processos de um setor, vá para Gestão de processos.
+        </p>
       </div>
       <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
         {sectors.map((sector) => {
           const Icon = iconMap[sector.icon] || Users;
           const colors = colorClasses[sector.color] || colorClasses.primary;
+          const isSelected = selectedSectors.includes(sector.id);
 
           return (
-            <Link
+            <div
               key={sector.id}
-              href={`/auth/sectors/${sector.id}`}
               className={cn(
-                "group flex flex-col gap-3 rounded-lg border p-4 transition-all duration-150",
-                "hover:shadow-md hover:border-primary/30",
-                colors.border,
+                "group relative flex flex-col gap-3 rounded-lg border p-4 transition-all duration-150",
+                "hover:shadow-md",
+                isSelected && isEditing
+                  ? "border-primary/50 bg-primary/5"
+                  : colors.border,
                 "bg-card",
               )}
             >
-              <div className="flex items-center gap-3">
+              {isEditing && (
+                <div className="absolute right-3 top-3 z-10">
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => onToggleSector(sector.id)}
+                    className="cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 flex-1">
                 <div
                   className={cn(
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105",
@@ -94,7 +119,6 @@ export function SectorsList({ sectors }: SectorsListProps) {
                 </div>
               </div>
 
-              {/* Process Type Indicators */}
               <div className="flex items-center gap-4 pt-2 border-t border-border">
                 <div
                   className="flex items-center gap-1.5"
@@ -115,7 +139,7 @@ export function SectorsList({ sectors }: SectorsListProps) {
                   </span>
                 </div>
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>
