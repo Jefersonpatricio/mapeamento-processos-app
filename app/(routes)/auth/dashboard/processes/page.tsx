@@ -46,13 +46,21 @@ import {
   FlowLegend,
 } from "./components/flow-controls";
 import { ProcessDetailModal } from "./components/process-detail-modal";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function ProcessesPage() {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
 
-  const { processes, loading, error } = useProcesses();
-  const { departments, loading: loadingDepts } = useDepartments();
+  const {
+    processes,
+    loading,
+    error,
+    deleteProcess,
+    refetch: refetchProcesses,
+  } = useProcesses();
+  const { departments, refetch: refetchDepartments } = useDepartments();
 
   const [nodesState, setNodes] = useState<Node[]>([]);
   const [edgesState, setEdges] = useState<Edge[]>([]);
@@ -60,6 +68,26 @@ export default function ProcessesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
   const [direction, setDirection] = useState<Direction>("TB");
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteProcess = async () => {
+    if (!selectedNode || selectedNode.id.startsWith("group-")) return;
+    setDeleting(true);
+    try {
+      await deleteProcess(selectedNode.id);
+      await refetchDepartments();
+      await refetchProcesses();
+      toast.success("Processo excluído com sucesso!");
+      setIsModalOpen(false);
+      setSelectedNode(null);
+    } catch (err) {
+      toast.error("Erro ao excluir processo.");
+    } finally {
+      setDeleting(false);
+      setConfirmDeleteOpen(false);
+    }
+  };
 
   const { nodes: builtNodes, edges: builtEdges } = useMemo(
     () => buildNodesAndEdges(processes, departments, direction),
@@ -133,7 +161,7 @@ export default function ProcessesPage() {
     );
   }, [edgesState, visibleNodes, selectedDepartment]);
 
-  if (loading || loadingDepts) {
+  if (loading || !processes) {
     return (
       <div className="flex items-center justify-center py-32">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -265,7 +293,34 @@ export default function ProcessesPage() {
         processes={processes}
         onAddChild={handleAddChildProcess}
         onEdit={handleEditProcess}
+        onDelete={() => setConfirmDeleteOpen(true)}
       />
+
+      <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogTitle>Confirmar exclusão</DialogTitle>
+          <p>
+            Tem certeza que deseja excluir este processo? Esta ação não pode ser
+            desfeita.
+          </p>
+          <div className="flex gap-2 justify-end mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDeleteOpen(false)}
+              disabled={deleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteProcess}
+              disabled={deleting}
+            >
+              {deleting ? "Excluindo..." : "Excluir"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import * as React from "react";
 import { Sidebar, SidebarProvider, useSidebar } from "@/components/sidebar";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -32,6 +33,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <SidebarProvider>
       <AuthContent>{children}</AuthContent>
+      <Toaster duration={2000} position="top-center" />
     </SidebarProvider>
   );
 }

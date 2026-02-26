@@ -29,6 +29,7 @@ interface ProcessDetailModalProps {
   processes: Process[];
   onAddChild: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
 const CRIT_LABEL = { low: "Baixa", medium: "Média", high: "Alta" } as const;
@@ -59,6 +60,11 @@ export function ProcessDetailModal({
             const p = isGroup
               ? null
               : processes.find((x) => x.id === selectedNode.id);
+
+            const departmentId = selectedNode.id.replace("group-", "");
+            const processesLength = isGroup
+              ? processes.filter((x) => x.departmentId === departmentId).length
+              : 0;
 
             return (
               <>
@@ -238,10 +244,13 @@ export function ProcessDetailModal({
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Clique num processo dentro deste departamento para ver
-                      seus detalhes.
-                    </p>
+                    isGroup && (
+                      <p className="text-sm text-muted-foreground">
+                        {processesLength === 0
+                          ? "Nenhum processo cadastrado ainda. Clique no botão abaixo para criar o primeiro processo deste departamento."
+                          : "Clique num processo dentro deste departamento para ver seus detalhes."}
+                      </p>
+                    )
                   )}
                 </div>
 

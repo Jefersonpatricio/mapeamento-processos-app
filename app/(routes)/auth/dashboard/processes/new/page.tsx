@@ -9,9 +9,10 @@ export default function Page() {
   const parentId = searchParams.get("parentId") || "";
   const parentLabel = searchParams.get("parentLabel") || "";
   const parentDepartment = searchParams.get("parentDepartment") || "";
-  const initialData = parentId
-    ? { parentId, department: parentDepartment }
-    : undefined;
+  const initialData = {
+    parentId,
+    department: parentDepartment,
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
