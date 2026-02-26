@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Sidebar, SidebarProvider, useSidebar } from "@/components/sidebar";
-import { UserProvider } from "@/app/contexts/user-context";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -31,10 +30,8 @@ function AuthContent({ children }: { children: React.ReactNode }) {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <UserProvider>
-      <SidebarProvider>
-        <AuthContent>{children}</AuthContent>
-      </SidebarProvider>
-    </UserProvider>
+    <SidebarProvider>
+      <AuthContent>{children}</AuthContent>
+    </SidebarProvider>
   );
 }

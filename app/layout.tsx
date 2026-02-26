@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fustat } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { AuthProvider } from "./contexts/auth-context";
 
 const fustat = Fustat({
   variable: "--font-fustat",
@@ -9,7 +10,7 @@ const fustat = Fustat({
 });
 
 export const metadata: Metadata = {
-  title: "MangaConsulting",
+  title: "MangoConsulting",
   description: "Sua jornada para a excelência operacional começa aqui",
 };
 
@@ -27,7 +28,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
       </body>
     </html>

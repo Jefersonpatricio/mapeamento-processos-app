@@ -1,11 +1,13 @@
 import {
-  MessageSquare,
-  FileText,
+  BarChart3,
+  Building2,
   Cog,
-  Ticket,
-  CheckSquare,
+  FileText,
   type LucideIcon,
   HomeIcon,
+  Settings,
+  Users,
+  GitBranch,
 } from "lucide-react";
 
 export interface NavigationItem {
@@ -13,6 +15,7 @@ export interface NavigationItem {
   icon: LucideIcon;
   href: string;
   badge?: string;
+  disabled?: boolean;
 }
 
 export interface NavigationSection {
@@ -22,7 +25,7 @@ export interface NavigationSection {
 
 export const navigationData: NavigationSection[] = [
   {
-    title: "Pages",
+    title: "Principal",
     items: [
       {
         name: "Dashboard",
@@ -30,24 +33,54 @@ export const navigationData: NavigationSection[] = [
         href: "/auth/dashboard",
       },
       {
-        name: "Gestão de processos",
+        name: "Processos",
         icon: Cog,
         href: "/auth/dashboard/processes",
       },
       {
-        name: "Invoice",
+        name: "Departamentos",
+        icon: Building2,
+        href: "/auth/dashboard/departments",
+      },
+    ],
+  },
+  {
+    title: "Análise",
+    items: [
+      {
+        name: "Fluxogramas",
+        icon: GitBranch,
+        href: "/auth/dashboard/flowcharts",
+        disabled: true,
+      },
+      {
+        name: "Relatórios",
         icon: FileText,
-        href: "/invoices",
+        href: "/auth/dashboard/reports",
+        disabled: true,
       },
       {
-        name: "Tickets",
-        icon: Ticket,
-        href: "/tickets",
+        name: "Indicadores",
+        icon: BarChart3,
+        href: "/auth/dashboard/indicators",
+        disabled: true,
+      },
+    ],
+  },
+  {
+    title: "Administração",
+    items: [
+      {
+        name: "Usuários",
+        icon: Users,
+        href: "/auth/dashboard/users",
+        disabled: true,
       },
       {
-        name: "Taskboard",
-        icon: CheckSquare,
-        href: "/tasks",
+        name: "Configurações",
+        icon: Settings,
+        href: "/auth/dashboard/settings",
+        disabled: true,
       },
     ],
   },
@@ -55,5 +88,7 @@ export const navigationData: NavigationSection[] = [
 
 // Helper to get the section icon
 export const sectionIcons: Record<string, LucideIcon> = {
-  Pages: FileText,
+  Principal: HomeIcon,
+  Análise: FileText,
+  Administração: Settings,
 };

@@ -11,7 +11,7 @@ export function ActivityList({ activities }: ActivityListProps) {
     <div className="rounded-lg border border-border bg-card">
       <div className="border-b border-border p-4">
         <h3 className="text-lg font-semibold text-foreground">
-          Recent Activity
+          Atividade Recente
         </h3>
       </div>
       <div className="divide-y divide-border">

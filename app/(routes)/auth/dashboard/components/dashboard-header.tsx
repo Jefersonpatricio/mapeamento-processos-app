@@ -1,16 +1,57 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { RefreshCw } from "lucide-react";
+
 interface DashboardHeaderProps {
   title: string;
   description?: string;
   showLastUpdated?: boolean;
-  lastUpdated?: string;
+}
+
+function useLastUpdated() {
+  const [loadedAt] = useState(() => new Date());
+  const [label, setLabel] = useState(() => {
+    const diff = Math.floor((Date.now() - loadedAt.getTime()) / 1000);
+    if (diff < 60) {
+      return `${loadedAt.getHours().toString().padStart(2, "0")}:${loadedAt.getMinutes().toString().padStart(2, "0")} (agora mesmo)`;
+    }
+    const mins = Math.floor(diff / 60);
+    if (mins < 60) {
+      return `${loadedAt.getHours().toString().padStart(2, "0")}:${loadedAt.getMinutes().toString().padStart(2, "0")} (há ${mins} min)`;
+    }
+    const hrs = Math.floor(mins / 60);
+    return `${loadedAt.getHours().toString().padStart(2, "0")}:${loadedAt.getMinutes().toString().padStart(2, "0")} (há ${hrs}h)`;
+  });
+
+  useEffect(() => {
+    function format() {
+      const diff = Math.floor((Date.now() - loadedAt.getTime()) / 1000);
+      if (diff < 60) {
+        return `${loadedAt.getHours().toString().padStart(2, "0")}:${loadedAt.getMinutes().toString().padStart(2, "0")} (agora mesmo)`;
+      }
+      const mins = Math.floor(diff / 60);
+      if (mins < 60) {
+        return `${loadedAt.getHours().toString().padStart(2, "0")}:${loadedAt.getMinutes().toString().padStart(2, "0")} (há ${mins} min)`;
+      }
+      const hrs = Math.floor(mins / 60);
+      return `${loadedAt.getHours().toString().padStart(2, "0")}:${loadedAt.getMinutes().toString().padStart(2, "0")} (há ${hrs}h)`;
+    }
+
+    const id = setInterval(() => setLabel(format()), 60_000);
+    return () => clearInterval(id);
+  }, [loadedAt]);
+
+  return label;
 }
 
 export function DashboardHeader({
   title,
   description,
   showLastUpdated = true,
-  lastUpdated = "Just now",
 }: DashboardHeaderProps) {
+  const lastUpdated = useLastUpdated();
+
   return (
     <header className="border-b border-border bg-card">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -24,10 +65,9 @@ export function DashboardHeader({
             )}
           </div>
           {showLastUpdated && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Last updated: {lastUpdated}
-              </span>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Última atualização: {lastUpdated}</span>
             </div>
           )}
         </div>
