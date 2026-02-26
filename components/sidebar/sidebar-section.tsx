@@ -20,7 +20,6 @@ export function SidebarSection({
 }: SidebarSectionProps) {
   return (
     <div className="space-y-1">
-      {/* Section Label - only visible when expanded */}
       {!collapsed && (
         <h3
           className={cn(
@@ -32,7 +31,6 @@ export function SidebarSection({
         </h3>
       )}
 
-      {/* Navigation Items */}
       <nav className="space-y-1" role="navigation" aria-label={title}>
         {items.map((item) => (
           <SidebarNavItem
@@ -46,6 +44,7 @@ export function SidebarSection({
             }
             collapsed={collapsed}
             badge={item.badge === "active" ? undefined : item.badge}
+            disabled={item.disabled}
           />
         ))}
       </nav>

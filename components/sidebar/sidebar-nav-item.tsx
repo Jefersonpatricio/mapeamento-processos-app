@@ -17,6 +17,7 @@ interface SidebarNavItemProps {
   isActive?: boolean;
   collapsed?: boolean;
   badge?: string;
+  disabled?: boolean;
 }
 
 export function SidebarNavItem({
@@ -26,18 +27,38 @@ export function SidebarNavItem({
   isActive = false,
   collapsed = false,
   badge,
+  disabled = false,
 }: SidebarNavItemProps) {
   const baseClasses = cn(
     "group relative flex items-center gap-3 rounded-md text-sm font-medium transition-all duration-150",
     "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-sidebar-background",
     collapsed ? "justify-center p-3" : "px-4 py-3",
-    isActive
-      ? "border-l-[3px] border-primary bg-sidebar-active-bg text-primary font-medium"
-      : "text-sidebar-foreground hover:bg-sidebar-icon-bg hover:text-foreground",
+    disabled
+      ? "pointer-events-none opacity-40 cursor-not-allowed"
+      : isActive
+        ? "border-l-[3px] border-primary bg-sidebar-active-bg text-primary font-medium"
+        : "text-sidebar-foreground hover:bg-sidebar-icon-bg hover:text-foreground",
     isActive && !collapsed && "pl-[calc(1rem-3px)]",
   );
 
-  const content = (
+  const content = disabled ? (
+    <div className={baseClasses} aria-disabled="true">
+      <div className="flex h-6 w-6 items-center justify-center">
+        <Icon
+          className="h-5 w-5 shrink-0 text-sidebar-foreground"
+          strokeWidth={2}
+        />
+      </div>
+      {!collapsed && (
+        <>
+          <span className="truncate">{name}</span>
+          <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+            Em breve
+          </span>
+        </>
+      )}
+    </div>
+  ) : (
     <Link
       href={href}
       className={baseClasses}

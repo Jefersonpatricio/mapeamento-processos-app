@@ -1,13 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { SidebarSection } from "./sidebar-section";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { navigationData } from "@/app/(routes)/auth/dashboard/navigation-data";
 import { useSidebar } from "./sidebar-context";
+import { useAuth } from "@/app/contexts/auth-context";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -16,6 +22,7 @@ interface SidebarProps {
 
 export function Sidebar({ currentPath = "" }: SidebarProps) {
   const { collapsed, setCollapsed, isMobile } = useSidebar();
+  const { logout } = useAuth();
 
   const toggleSidebar = () => {
     if (!isMobile) {
@@ -32,7 +39,6 @@ export function Sidebar({ currentPath = "" }: SidebarProps) {
         )}
         aria-label="Main navigation"
       >
-        {/* Logo Section */}
         <div
           className={cn(
             "flex items-center border-b border-sidebar-border p-4",
@@ -51,7 +57,6 @@ export function Sidebar({ currentPath = "" }: SidebarProps) {
             </div>
           )}
 
-          {/* Collapse Toggle - hidden on mobile */}
           {!isMobile && (
             <button
               onClick={toggleSidebar}
@@ -71,7 +76,6 @@ export function Sidebar({ currentPath = "" }: SidebarProps) {
             </button>
           )}
 
-          {/* Show menu icon when collapsed on desktop */}
           {collapsed && isMobile && (
             <div className="flex h-8 w-8 items-center justify-center rounded-lg text-white">
               <Image
@@ -85,7 +89,6 @@ export function Sidebar({ currentPath = "" }: SidebarProps) {
           )}
         </div>
 
-        {/* Navigation Sections */}
         <div className="flex-1 overflow-y-auto py-4">
           <div className={cn("space-y-6", collapsed ? "px-2" : "px-2")}>
             {navigationData.map((section, index) => (
@@ -109,14 +112,46 @@ export function Sidebar({ currentPath = "" }: SidebarProps) {
           </div>
         </div>
 
-        {/* Footer Section */}
+        <div className={cn("px-4 pb-2", collapsed && "px-2")}>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={logout}
+                  className={cn(
+                    "flex w-full items-center justify-center rounded-md p-2 text-sidebar-foreground transition-colors duration-200",
+                    "hover:bg-destructive/10 hover:text-destructive",
+                    "focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 dark:focus:ring-offset-sidebar-background",
+                  )}
+                  aria-label="Sair"
+                >
+                  <LogOut className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Sair</TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={logout}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground transition-colors duration-200",
+                "hover:bg-destructive/10 hover:text-destructive",
+                "focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 dark:focus:ring-offset-sidebar-background",
+              )}
+              aria-label="Sair"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Sair</span>
+            </button>
+          )}
+        </div>
+
         <div
           className={cn(
             "border-t border-sidebar-border p-4",
             collapsed && "px-2",
           )}
         >
-          {/* Theme Switch */}
           <ThemeSwitch collapsed={collapsed} />
         </div>
       </aside>
