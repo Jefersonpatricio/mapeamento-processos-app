@@ -1,8 +1,8 @@
 export interface StatCard {
   title: string;
   value: string;
-  change: string;
-  changeType: "positive" | "negative" | "neutral";
+  change?: string;
+  changeType?: "positive" | "negative" | "neutral";
   icon: string;
 }
 
@@ -17,11 +17,12 @@ export interface RecentActivity {
 export interface QuickAction {
   title: string;
   description: string;
-  action: "create" | "edit";
+  action: "create" | "edit" | "navigate";
   icon: string;
+  href?: string;
 }
 
-export interface Sector {
+export interface Department {
   id: string;
   name: string;
   processCount: number;
@@ -31,76 +32,45 @@ export interface Sector {
   color: string;
 }
 
-export const statsData: StatCard[] = [
-  {
-    title: "Total de processos",
-    value: "15",
-    change: "+12.5%",
-    changeType: "positive",
-    icon: "Users",
-  },
-  {
-    title: "Com documentação",
-    value: "19",
-    change: "+3.2%",
-    changeType: "positive",
-    icon: "FolderOpen",
-  },
-  {
-    title: "Processos Sistêmicos",
-    value: "12",
-    change: "-8.1%",
-    changeType: "negative",
-    icon: "Cpu",
-  },
-  {
-    title: "Processos Manuais",
-    value: "7",
-    change: "+18.2%",
-    changeType: "positive",
-    icon: "Wrench",
-  },
-];
-
 export const recentActivityData: RecentActivity[] = [
   {
     id: "1",
     user: "Maria Silva",
-    action: "created",
-    target: "Project Alpha",
-    time: "2 minutes ago",
+    action: "criou o processo",
+    target: "Onboarding de Colaboradores",
+    time: "há 2 minutos",
   },
   {
     id: "2",
     user: "João Santos",
-    action: "updated",
-    target: "Invoice #1234",
-    time: "15 minutes ago",
+    action: "editou o processo",
+    target: "Avaliação de Fornecedores",
+    time: "há 15 minutos",
   },
   {
     id: "3",
     user: "Ana Costa",
-    action: "completed",
-    target: "Task: Design Review",
-    time: "1 hour ago",
+    action: "adicionou documentação em",
+    target: "Fechamento Contábil",
+    time: "há 1 hora",
   },
   {
     id: "4",
     user: "Pedro Lima",
-    action: "commented on",
-    target: "Ticket #567",
-    time: "2 hours ago",
+    action: "revisou o processo",
+    target: "Gestão de Estoque",
+    time: "há 2 horas",
   },
   {
     id: "5",
     user: "Carla Oliveira",
-    action: "assigned",
-    target: "Bug Fix #890",
-    time: "3 hours ago",
+    action: "criou o departamento",
+    target: "Jurídico",
+    time: "há 3 horas",
   },
 ];
 
-export const sectorsData: Sector[] = [
+export const departmentsData: Department[] = [
   {
     id: "1",
     name: "RH",
@@ -141,14 +111,28 @@ export const sectorsData: Sector[] = [
 
 export const quickActionsData: QuickAction[] = [
   {
-    title: "Novo setor",
-    description: "Crie um novo setor para organizar seus processos",
+    title: "Novo processo",
+    description: "Mapeie um novo processo para um departamento",
+    action: "navigate",
+    icon: "Cog",
+    href: "/auth/dashboard/processes/new",
+  },
+  {
+    title: "Ver processos",
+    description: "Visualize e gerencie todos os processos cadastrados",
+    action: "navigate",
+    icon: "List",
+    href: "/auth/dashboard/processes",
+  },
+  {
+    title: "Novo departamento",
+    description: "Crie um novo departamento para organizar seus processos",
     action: "create",
     icon: "Plus",
   },
   {
-    title: "Editar setor",
-    description: "Edite ou apague um setor existente",
+    title: "Editar departamento",
+    description: "Edite ou apague um departamento existente",
     action: "edit",
     icon: "Edit",
   },

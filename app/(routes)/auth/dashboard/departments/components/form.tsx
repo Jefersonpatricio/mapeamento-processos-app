@@ -1,11 +1,18 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import { X } from "lucide-react";
+import { useDepartments } from "@/hooks/use-departments";
+import {
+  useProcesses,
+  formTypeToApi,
+  formCriticalityToApi,
+} from "@/hooks/use-processes";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -13,10 +20,8 @@ import { Upload } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Field,
@@ -27,6 +32,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 import {
   InputGroup,
   InputGroupAddon,
@@ -43,17 +49,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const setores = [
-  { value: "financeiro", label: "Financeiro" },
-  { value: "rh", label: "Recursos Humanos" },
-  { value: "ti", label: "Tecnologia da Informação" },
-  { value: "comercial", label: "Comercial" },
-  { value: "marketing", label: "Marketing" },
-  { value: "operacoes", label: "Operações" },
-];
-
 const formSchema = z.object({
-  sector: z.string().min(1, "Selecione um setor."),
+  department: z.string().min(1, "Selecione um departamento."),
   criticality: z.enum(["baixa", "media", "alta"], {
     message: "Selecione um nível de criticidade.",
   }),
@@ -65,7 +62,7 @@ const formSchema = z.object({
     .string()
     .min(2, "O nome do processo deve conter pelo menos 2 caracteres.")
     .max(32, "O nome do processo deve conter no máximo 32 caracteres."),
-  systems: z
+  tools: z
     .array(z.string())
     .min(1, "Adicione pelo menos um sistema ou ferramenta."),
   responsibles: z
@@ -77,6 +74,7 @@ const formSchema = z.object({
     .optional()
     .or(z.literal("")),
   files: z.array(z.instanceof(File)).optional(),
+  active: z.boolean().optional(),
   description: z
     .string()
     .min(20, "A descrição deve conter pelo menos 20 caracteres.")
@@ -98,23 +96,27 @@ export function NewProcessForm({
   processId,
   parentLabel,
 }: NewProcessFormProps = {}) {
-  const [systemsInput, setSystemsInput] = React.useState("");
+  const router = useRouter();
+  const { departments, loading: loadingDepts } = useDepartments();
+  const { createProcess, updateProcess } = useProcesses();
+  const [toolsInput, setToolsInput] = React.useState("");
   const [responsiblesInput, setResponsiblesInput] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      sector: initialData?.sector || "",
+      department: initialData?.department || "",
       criticality: initialData?.criticality || undefined,
       processType: initialData?.processType || undefined,
       parentId: initialData?.parentId || "",
       title: initialData?.title || "",
-      systems: initialData?.systems || [],
+      tools: initialData?.tools || [],
       responsibles: initialData?.responsibles || [],
       documentLink: initialData?.documentLink || "",
       files: initialData?.files || [],
       description: initialData?.description || "",
+      active: initialData?.active ?? true,
     },
   });
 
@@ -122,39 +124,37 @@ export function NewProcessForm({
   const parentLabelValue = parentLabel?.trim() || "";
   const isParentLinked = Boolean(parentIdValue);
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    console.log(
-      mode === "edit" ? "Editando processo:" : "Criando processo:",
-      data,
-    );
-    if (mode === "edit" && processId) {
-      console.log("ID do processo:", processId);
-    }
+    try {
+      const dto = {
+        name: data.title,
+        type: formTypeToApi(data.processType),
+        criticality: formCriticalityToApi(data.criticality),
+        description: data.description,
+        departmentId: data.department,
+        ...(data.parentId ? { parentId: data.parentId } : {}),
+        tools: data.tools,
+        responsibles: data.responsibles,
+        ...(data.documentLink ? { documentLink: data.documentLink } : {}),
+        ...(mode === "edit" ? { active: data.active ?? true } : {}),
+      };
 
-    // Simula o envio dos dados
-    setTimeout(() => {
-      toast(
-        mode === "edit"
-          ? "Processo atualizado com sucesso!"
-          : "Processo criado com sucesso!",
-        {
-          description: (
-            <pre className="bg-code text-code-foreground mt-2 w-[320px] overflow-x-auto rounded-md p-4">
-              <code>{JSON.stringify(data, null, 2)}</code>
-            </pre>
-          ),
-          position: "bottom-right",
-          classNames: {
-            content: "flex flex-col gap-2",
-          },
-          style: {
-            "--border-radius": "calc(var(--radius)  + 4px)",
-          } as React.CSSProperties,
-        },
+      if (mode === "edit" && processId) {
+        await updateProcess(processId, dto);
+        toast.success("Processo atualizado com sucesso!");
+      } else {
+        await createProcess(dto);
+        toast.success("Processo criado com sucesso!");
+      }
+      router.push("/auth/dashboard/processes");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao salvar processo.",
       );
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   }
 
   return (
@@ -165,32 +165,40 @@ export function NewProcessForm({
           <input type="hidden" {...form.register("parentId")} />
           <div className="space-y-4">
             <Controller
-              name="sector"
+              name="department"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-sector">Setor</FieldLabel>
+                  <FieldLabel htmlFor="form-rhf-demo-department">
+                    Departamento
+                  </FieldLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
                     disabled={isParentLinked}
                   >
                     <SelectTrigger className="w-full" disabled={isParentLinked}>
-                      <SelectValue placeholder="Selecione um setor" />
+                      <SelectValue placeholder="Selecione um departamento" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Setores</SelectLabel>
-                        {setores.map((setor) => (
-                          <SelectItem key={setor.value} value={setor.value}>
-                            {setor.label}
+                        <SelectLabel>Departamentos</SelectLabel>
+                        {loadingDepts ? (
+                          <SelectItem value="__loading" disabled>
+                            Carregando...
                           </SelectItem>
-                        ))}
+                        ) : (
+                          departments.map((dept) => (
+                            <SelectItem key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                   <FieldDescription>
-                    Selecione o setor responsável por este processo.
+                    Selecione o departamento responsável por este processo.
                   </FieldDescription>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -200,7 +208,6 @@ export function NewProcessForm({
             />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* Nome do Processo - Full Width */}
               <div className="sm:col-span-2 mb-4">
                 <Controller
                   name="title"
@@ -229,7 +236,7 @@ export function NewProcessForm({
                 <div className="sm:col-span-2">
                   <Field>
                     <FieldLabel htmlFor="form-rhf-demo-parentId">
-                      Processo pai
+                      Macroprocesso
                     </FieldLabel>
                     <Input
                       id="form-rhf-demo-parentId"
@@ -238,7 +245,8 @@ export function NewProcessForm({
                       disabled
                     />
                     <FieldDescription>
-                      Este processo sera criado como filho do processo pai.
+                      Este processo será criado como subprocesso do
+                      macroprocesso selecionado.
                     </FieldDescription>
                   </Field>
                 </div>
@@ -322,7 +330,7 @@ export function NewProcessForm({
 
               <div className="sm:col-span-2">
                 <Controller
-                  name="systems"
+                  name="tools"
                   control={form.control}
                   render={({ field, fieldState }) => {
                     const handleKeyDown = (
@@ -330,14 +338,14 @@ export function NewProcessForm({
                     ) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        const value = systemsInput.trim();
+                        const value = toolsInput.trim();
                         if (value && !field.value.includes(value)) {
                           field.onChange([...field.value, value]);
-                          setSystemsInput("");
+                          setToolsInput("");
                         }
                       } else if (
                         e.key === "Backspace" &&
-                        !systemsInput &&
+                        !toolsInput &&
                         field.value.length > 0
                       ) {
                         field.onChange(field.value.slice(0, -1));
@@ -373,8 +381,8 @@ export function NewProcessForm({
                           ))}
                           <input
                             type="text"
-                            value={systemsInput}
-                            onChange={(e) => setSystemsInput(e.target.value)}
+                            value={toolsInput}
+                            onChange={(e) => setToolsInput(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder={
                               field.value.length === 0
@@ -543,6 +551,39 @@ export function NewProcessForm({
                   </Field>
                 )}
               />
+
+              {mode === "edit" && (
+                <div className="sm:col-span-2">
+                  <Controller
+                    name="active"
+                    control={form.control}
+                    render={({ field }) => (
+                      <Field>
+                        <div className="flex items-center justify-between rounded-lg border border-input px-4 py-3">
+                          <div className="space-y-0.5">
+                            <FieldLabel
+                              htmlFor="form-rhf-demo-active"
+                              className="cursor-pointer"
+                            >
+                              Status do processo
+                            </FieldLabel>
+                            <FieldDescription>
+                              {field.value
+                                ? "Processo ativo"
+                                : "Processo inativo"}
+                            </FieldDescription>
+                          </div>
+                          <Switch
+                            id="form-rhf-demo-active"
+                            checked={field.value ?? true}
+                            onCheckedChange={field.onChange}
+                          />
+                        </div>
+                      </Field>
+                    )}
+                  />
+                </div>
+              )}
 
               <div className="sm:col-span-2">
                 <Controller

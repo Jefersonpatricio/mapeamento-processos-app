@@ -8,8 +8,10 @@ export default function Page() {
   const searchParams = useSearchParams();
   const parentId = searchParams.get("parentId") || "";
   const parentLabel = searchParams.get("parentLabel") || "";
-  const parentSector = searchParams.get("parentSector") || "";
-  const initialData = parentId ? { parentId, sector: parentSector } : undefined;
+  const parentDepartment = searchParams.get("parentDepartment") || "";
+  const initialData = parentId
+    ? { parentId, department: parentDepartment }
+    : undefined;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
